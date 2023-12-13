@@ -1,0 +1,144 @@
+#include <LiquidCrystal.h> 
+#include<SoftwareSerial.h>
+#include <Wire.h>
+
+// Sensor Declaration
+int R_S = A0; //change from 2 to A0
+int L_S = A5;
+
+// Motor Declaration
+int in1 = A1;
+int in2 = A2;
+int in3 = A3;
+int in4 = A4;
+
+// Speed Control Declaration
+int enAL = 3;
+int enBR = 11;
+
+// Setup Declaration
+int A;
+unsigned long startTime;
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void setup(){
+
+  Serial.begin(9600);
+
+  // MPU 6050 Setup
+  //pinMode(13, OUTPUT);
+  //digitalWrite(13, HIGH);
+
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+
+  pinMode(EA,INPUT);
+  pinMode(EB,INPUT);
+
+  pinMode(R_S, INPUT); 
+  pinMode(L_S, INPUT); 
+
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+
+  pinMode(enAL,OUTPUT);
+  pinMode(enBR,OUTPUT);
+
+  digitalWrite(enAL, HIGH);
+  digitalWrite(enBR, HIGH);
+
+  //===========================
+  lcd.begin(16, 2); //Initialise 16*2 LCD
+  lcd.print(" JOJO F1 CAR "); //Intro Message line 1
+  lcd.setCursor(0, 1);
+  lcd.print("  KOPI O GAO GAO "); //Intro Message line 2
+  
+  // wait 2 seconds before begining and clear intro message
+  delay(2000);
+  lcd.clear();
+
+  // Start Engine for Runnning
+  analogWrite(enAL, 120);
+  analogWrite(enBR, 120);
+  digitalWrite(in1, LOW); //Right Motor forword Pin 
+  digitalWrite(in2, HIGH);  //Right Motor backword Pin 
+  digitalWrite(in3, LOW);  //Left Motor backword Pin 
+  digitalWrite(in4, HIGH); //Left Motor forword Pin 
+  delay(250);
+
+  Previous_OutputA = digitalRead(EA);
+  Previous_OutputB = digitalRead(EB);
+  Encoder_Count = 0;
+}
+
+void loop(){
+
+  if((digitalRead(R_S) == 0)&&(digitalRead(L_S) == 0)){
+    forward();
+    distance();
+    //distance();
+  }   //if Right Sensor and Left Sensor are at White color then it will call forword function
+
+  if((digitalRead(R_S) == 0)&&(digitalRead(L_S) == 1)){
+    turnRight();
+    distance();
+    } //if Right Sensor is Black and Left Sensor is White then it will call turn Right function  
+
+  if((digitalRead(R_S) == 1)&&(digitalRead(L_S) == 0)){
+    turnLeft();
+    distance();
+    }  //if Right Sensor is White and Left Sensor is Black then it will call turn Left function
+
+  if((digitalRead(R_S) == 1)&&(digitalRead(L_S) == 1)){Stop();} //if Right Sensor and Left Sensor are at Black color then it will call Stop function
+}
+
+void forward(){  //forword
+  analogWrite(enAL, 70);
+  analogWrite(enBR, 70);
+
+  digitalWrite(in1, LOW); //Right Motor forword Pin 
+  digitalWrite(in2, HIGH);  //Right Motor backword Pin 
+  digitalWrite(in3, LOW);  //Left Motor backword Pin 
+  digitalWrite(in4, HIGH); //Left Motor forword Pin 
+}
+
+void turnLeft(){ //turnLeft
+
+  analogWrite(enAL, 255);
+  analogWrite(enBR, 255);
+
+  digitalWrite(in1, LOW);  //Right Motor forword Pin 
+  digitalWrite(in2, HIGH); //Right Motor backword Pin  
+  digitalWrite(in3, HIGH);  //Left Motor backword Pin 
+  digitalWrite(in4, LOW); //Left Motor forword Pin 
+
+  delay(20);
+  Stop();
+}
+
+void turnRight(){ //turnRight
+  analogWrite(enAL, 255);
+  analogWrite(enBR, 255);
+
+  digitalWrite(in1, HIGH); //Right Motor forword Pin 
+  digitalWrite(in2, LOW);  //Right Motor backword Pin 
+  digitalWrite(in3, LOW); //Left Motor backword Pin 
+  digitalWrite(in4, HIGH);  //Left Motor forword Pin 
+
+  delay(20);
+  Stop();
+}
+
+void Stop(){ //stop
+
+  analogWrite(enAL, 0);
+  analogWrite(enBR, 0);
+
+  digitalWrite(in1, LOW); //Right Motor forword Pin 
+  digitalWrite(in2, LOW); //Right Motor backword Pin 
+  digitalWrite(in3, LOW); //Left Motor backword Pin 
+  digitalWrite(in4, LOW); //Left Motor forword Pin 
+}
